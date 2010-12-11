@@ -77,7 +77,7 @@ class String
   end
 
   def self.colorify (string, foreground, background, flags)
-    return string if ENV['NO_COLOR'].nil? || ENV['NO_COLOR'].empty?
+    return string if ENV['NO_COLORS'] && !ENV['NO_COLORS'].empty?
 
     result = string.clone
 
