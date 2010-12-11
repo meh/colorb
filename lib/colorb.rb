@@ -77,6 +77,8 @@ class String
   end
 
   def self.colorify (string, foreground, background, flags)
+    return string if ENV['NO_COLOR'].nil? || ENV['NO_COLOR'].empty?
+
     result = string.clone
 
     result.sub!(/^/, [
