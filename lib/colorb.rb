@@ -57,7 +57,7 @@ class String
       if id.to_s.end_with?('?')
         @foreground == name
       else
-        if !foreground
+        if !@foreground
           @foreground = name
         else
           @background = name
@@ -70,7 +70,28 @@ class String
         @flags.member?(name)
       else
         @flags << name
-        @flags.uniq!
+      end
+    end
+
+    @lazy ? self : self.colorify!
+  end
+
+  def color (code)
+    if code < 16
+      if code > 7
+        (@flags ||= []) << (!@foreground ? :bold : :blink)
+      end
+
+      if !@foreground
+        @foreground = code - (code > 7 ? 7 : 0)
+      else
+        @background = code - (code > 7 ? 7 : 0)
+      end
+    else
+      if !@foreground
+        @foreground = code
+      else
+        @background = code
       end
     end
 
@@ -102,11 +123,19 @@ class String
     result
   end
 
-  def self.color! (name, bg=false)
-    "\e[#{Colors[name] + (bg ? 40 : 30)}m" if Colors[name]
+  def self.color! (what, bg=false)
+    if what.is_a?(Symbol) || what.is_a?(String)
+      "\e[#{Colors[what.to_sym] + (bg ? 40 : 30)}m" if Colors[what.to_sym]
+    elsif what.is_a?(Numeric)
+      if what < 8
+        "\e[#{what + (bg ? 40 : 30)}m"
+      else
+        "\e[#{bg ? 48 : 38};5;#{what}m"
+      end
+    end
   end
 
-  def self.extra! (name)
-    "\e[#{Extra[name]}m" if Extra[name]
+  def self.extra! (what)
+    Extra[what] ? "\e[#{Extra[what]}m" : "\e[#{what}m"
   end
 end
