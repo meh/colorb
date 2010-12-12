@@ -32,7 +32,7 @@ class String
   }
 
   Extra = {
-    :default => 0,
+    :clean => 0,
 
     :bold      => 1,
     :underline => 4,
@@ -70,9 +70,17 @@ class String
         @flags.member?(name)
       else
         @flags << name
+        @flags.uniq!
       end
     end
 
+    @lazy ? self : self.colorify!
+  end
+
+  def lazy;  @lazy = true; self end
+  def lazy?; @lazy              end
+
+  def colorify!
     String.colorify(self, @foreground, @background, @flags)
   end
 
@@ -84,12 +92,12 @@ class String
     result.sub!(/^/, [
       String.color!(foreground),
       String.color!(background, true),
-      [flags].flatten.compact.map {|f|
+      [flags].flatten.compact.uniq.map {|f|
         String.extra!(f)
       }
     ].flatten.compact.join(''))
 
-    result.sub!(/$/, String.extra!(:default))
+    result.sub!(/$/, String.extra!(:clean))
 
     result
   end
