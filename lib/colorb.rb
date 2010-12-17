@@ -44,58 +44,66 @@ class String
     remove_method name rescue nil
   }
 
-  attr_reader :foreground, :background, :flags
+  attr_accessor :foreground, :background, :flags
 
   alias __old_method_missing method_missing
 
   def method_missing (id, *args, &block)
     name = id.to_s.match(/^(.+?)[!?]?$/)[1].to_sym
 
+    result = self.frozen? ? "#{self}" : self
+
     return __old_method_missing(id, *args, &block) unless Colors[name] || Extra[name]
 
     if Colors[name]
       if id.to_s.end_with?('?')
-        @foreground == name
+        result.foreground == name
       else
-        if !@foreground
-          @foreground = name
+        if !result.foreground
+          result.foreground = name
         else
-          @background = name
+          result.background = name
         end
       end
     elsif Extra[name]
-      @flags ||= []
+      result.flags ||= []
 
       if id.to_s.end_with?('?')
-        @flags.member?(name)
+        result.flags.member?(name)
       else
-        @flags << name
+        result.flags << name
       end
     end
 
-    @lazy ? self : self.colorify!
+    result.lazy? ? result : result.colorify!
   end
 
-  def color (code)
+  def color (code, second=nil)
+    return method_missing(code.to_sym) if code.is_a?(Symbol) || code.is_a?(String)
+
+    result = self.frozen? ? "#{self}" : self
+
     if code < 16
       if code > 7
-        (@flags ||= []) << (!@foreground ? :bold : :blink)
+        (result.flags ||= []) << (!result.foreground ? :bold : :blink)
       end
 
-      if !@foreground
-        @foreground = code - (code > 7 ? 7 : 0)
+      if !result.foreground
+        result.foreground = code - (code > 7 ? 7 : 0)
       else
-        @background = code - (code > 7 ? 7 : 0)
+        result.background = code - (code > 7 ? 7 : 0)
       end
     else
-      if !@foreground
-        @foreground = code
+      if !result.foreground
+        result.foreground = code
       else
-        @background = code
+        result.background = code
       end
     end
 
-    @lazy ? self : self.colorify!
+    result.color(second) if second
+
+    result.lazy? ? result : result.colorify!
   end
 
   def lazy;  @lazy = true; self end

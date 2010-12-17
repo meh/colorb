@@ -16,4 +16,11 @@ To get a string with default color and specific background just do something lik
 
 Colors: default, black, red, green, yellow, blue, magenta, cyan, white
 
-Extra:  default, bold, underline, blink, standout
+Extra: clean, bold, underline, blink, standout
+
+256 colors support
+==================
+
+If the used terminal supports 256 colors you can use them too, example:
+
+    "lol".color(255).color(160) # Get a white string with red background
