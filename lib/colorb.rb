@@ -51,7 +51,7 @@ class String
   def method_missing (id, *args, &block)
     name = id.to_s.match(/^(.+?)[!?]?$/)[1].to_sym
 
-    result = self.frozen? ? "#{self}" : self
+    result = (self.frozen? || !id.to_s.end_with?('!')) ? self.clone : self
 
     return __old_method_missing(id, *args, &block) unless Colors[name] || Extra[name]
 
@@ -81,29 +81,31 @@ class String
   def color (code, second=nil)
     return method_missing(code.to_sym) if code.is_a?(Symbol) || code.is_a?(String)
 
-    result = self.frozen? ? "#{self}" : self
+    self.clone.color!(code, seond)
+  end
 
+  def color! (code, second=nil)
     if code < 16
       if code > 7
-        (result.flags ||= []) << (!result.foreground ? :bold : :blink)
+        (self.flags ||= []) << (!self.foreground ? :bold : :blink)
       end
 
-      if !result.foreground
-        result.foreground = code - (code > 7 ? 7 : 0)
+      if !self.foreground
+        self.foreground = code - (code > 7 ? 7 : 0)
       else
-        result.background = code - (code > 7 ? 7 : 0)
+        self.background = code - (code > 7 ? 7 : 0)
       end
     else
-      if !result.foreground
-        result.foreground = code
+      if !self.foreground
+        self.foreground = code
       else
-        result.background = code
+        self.background = code
       end
     end
 
-    result.color(second) if second
+    self.color(second) if second
 
-    result.lazy? ? result : result.colorify!
+    self.lazy? ? self : self.colorify!
   end
 
   def lazy;  @lazy = true; self end
