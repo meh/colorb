@@ -51,7 +51,7 @@ class String
   def method_missing (id, *args, &block)
     name = id.to_s.match(/^(.+?)[!?]?$/)[1].to_sym
 
-    result = (self.frozen? || !id.to_s.end_with?('!')) ? self.clone : self
+    result = (self.frozen? || !id.to_s.end_with?('!')) ? self.dup : self
 
     return __old_method_missing(id, *args, &block) unless Colors[name] || Extra[name]
 
@@ -81,7 +81,7 @@ class String
   def color (code, second=nil)
     return method_missing(code.to_sym) if code.is_a?(Symbol) || code.is_a?(String)
 
-    self.clone.color!(code, seond)
+    self.dup.color!(code, seond)
   end
 
   def color! (code, second=nil)
@@ -118,7 +118,7 @@ class String
   def self.colorify (string, foreground, background, flags)
     return string if ENV['NO_COLORS'] && !ENV['NO_COLORS'].empty?
 
-    result = string.clone
+    result = string.dup
 
     result.sub!(/^/, [
       String.color!(foreground),
