@@ -40,72 +40,80 @@ class String
     :standout  => 7
   }
 
-  (Colors.keys + Extra.keys).each {|name|
-    remove_method name rescue nil
-  }
-
   attr_accessor :foreground, :background, :flags
 
-  alias __old_method_missing method_missing
-
-  def method_missing (id, *args, &block)
-    name = id.to_s.match(/^(.+?)[!?]?$/)[1].to_sym
-
-    result = (self.frozen? || !id.to_s.end_with?('!')) ? self.dup : self
-
-    return __old_method_missing(id, *args, &block) unless Colors[name] || Extra[name]
-
-    if Colors[name]
-      if id.to_s.end_with?('?')
-        result.foreground == name
-      else
-        if !result.foreground
-          result.foreground = name
-        else
-          result.background = name
-        end
-      end
-    elsif Extra[name]
-      result.flags ||= []
-
-      if id.to_s.end_with?('?')
-        result.flags.member?(name)
-      else
-        result.flags << name
-      end
+  Colors.keys.each {|name|
+    define_method name do
+      color(name)
     end
 
-    result.lazy? ? result : result.colorify!
-  end
+    define_method "#{name}!" do
+      color!(name)
+    end
+  }
+
+  Extra.keys.each {|name|
+    define_method name do
+      extra(name)
+    end
+
+    define_method "#{name}!" do
+      extra!(name)
+    end
+  }
 
   def color (code, second=nil)
-    return method_missing(code.to_sym) if code.is_a?(Symbol) || code.is_a?(String)
-
-    self.dup.color!(code, seond)
+    self.dup.color!(code, second)
   end
 
   def color! (code, second=nil)
-    if code < 16
-      if code > 7
-        (self.flags ||= []) << (!self.foreground ? :bold : :blink)
+    string = (self.frozen?) ? self.dup : self
+
+    if code.is_a?(Symbol) || code.is_a?(String)
+      name = code.to_sym
+
+      if !string.foreground
+        string.foreground = name
+      else
+        string.background = name
       end
 
-      if !self.foreground
-        self.foreground = code - (code > 7 ? 7 : 0)
-      else
-        self.background = code - (code > 7 ? 7 : 0)
-      end
+      string.lazy? ? string : string.colorify!
     else
-      if !self.foreground
-        self.foreground = code
+      if code < 16
+        if code > 7
+          (string.flags ||= []) << (!string.foreground ? :bold : :blink)
+        end
+
+        if !string.foreground
+          string.foreground = code - (code > 7 ? 7 : 0)
+        else
+          string.background = code - (code > 7 ? 7 : 0)
+        end
       else
-        self.background = code
+        if !string.foreground
+          string.foreground = code
+        else
+          string.background = code
+        end
       end
     end
 
-    self.color(second) if second
+    string.color!(second) if second
 
-    self.lazy? ? self : self.colorify!
+    string.lazy? ? string : string.colorify!
+  end
+
+  def extra (name)
+    self.dup.extra!(name)
+  end
+
+  def extra! (name)
+    string = (self.frozen?) ? self.dup : self
+
+    (string.flags ||= []) << name
+
+    string.lazy? ? string : string.colorify!
   end
 
   def lazy;  @lazy = true; self end
@@ -118,9 +126,9 @@ class String
   def self.colorify (string, foreground, background, flags)
     return string if ENV['NO_COLORS'] && !ENV['NO_COLORS'].empty?
 
-    result = string.dup
+    string = string.dup
 
-    result.sub!(/^/, [
+    string.sub!(/^/, [
       String.color!(foreground),
       String.color!(background, true),
       [flags].flatten.compact.uniq.map {|f|
@@ -128,9 +136,9 @@ class String
       }
     ].flatten.compact.join(''))
 
-    result.sub!(/$/, String.extra!(:clean))
+    string.sub!(/$/, String.extra!(:clean))
 
-    result
+    string
   end
 
   def self.color! (what, bg=false)
