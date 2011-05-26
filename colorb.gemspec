@@ -1,6 +1,6 @@
 Gem::Specification.new {|s|
     s.name         = 'colorb'
-    s.version      = '0.0.7'
+    s.version      = '0.0.8'
     s.author       = 'meh.'
     s.email        = 'meh@paranoici.org'
     s.homepage     = 'http://github.com/meh/colorb'

@@ -43,21 +43,21 @@ class String
   attr_accessor :foreground, :background, :flags
 
   Colors.keys.each {|name|
-    define_method name do
+    define_method name do |*args|
       color(name)
     end
 
-    define_method "#{name}!" do
+    define_method "#{name}!" do |*args|
       color!(name)
     end
   }
 
   Extra.keys.each {|name|
-    define_method name do
+    define_method name do |*args|
       extra(name)
     end
 
-    define_method "#{name}!" do
+    define_method "#{name}!" do |*args|
       extra!(name)
     end
   }
