@@ -38,7 +38,7 @@ describe String do
 
     [:red, :white, :bold,  :blink, :standout, :underline] => "\e[31m\e[47m\e[1m\e[5m\e[7m\e[4m\e[31m\e[47m\e[1m\e[5m\e[7m\e[31m\e[47m\e[1m\e[5m\e[31m\e[47m\e[1m\e[31m\e[47m\e[31mlol\e[0m\e[0m\e[0m\e[0m\e[0m\e[0m"
   ].each {|methods, value|
-    describe ([nil] + methods).join('.') do
+    describe(([nil] + methods).join('.')) do
       it 'returns the right ascii codes' do
         result = @string
 
