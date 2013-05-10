@@ -16,6 +16,7 @@
 #++
 
 require 'Win32/Console/ANSI' if RUBY_PLATFORM =~ /win32/
+require 'color'
 
 class String
   Colors = {
@@ -70,12 +71,10 @@ class String
     string = (self.frozen?) ? self.dup : self
 
     if code.is_a?(Symbol) || code.is_a?(String)
-      name = code.to_sym
-
       if !string.foreground
-        string.foreground = name
+        string.foreground = code
       else
-        string.background = name
+        string.background = code
       end
 
       string.lazy? ? string : string.colorify!
@@ -143,7 +142,13 @@ class String
 
   def self.color! (what, bg=false)
     if what.is_a?(Symbol) || what.is_a?(String)
-      "\e[#{Colors[what.to_sym] + (bg ? 40 : 30)}m" if Colors[what.to_sym]
+      if Colors[what.to_sym]
+        "\e[#{Colors[what.to_sym] + (bg ? 40 : 30)}m"
+      else
+        color = Color::RGB.from_html(what.to_s)
+
+        "\e[#{bg ? 48 : 38};2;#{color.red.to_i};#{color.green.to_i};#{color.blue.to_i}m"
+      end
     elsif what.is_a?(Numeric)
       if what < 8
         "\e[#{what + (bg ? 40 : 30)}m"

@@ -9,4 +9,6 @@ Gem::Specification.new {|s|
     s.files        = Dir.glob('lib/**/*.rb')
     s.require_path = 'lib'
     s.has_rdoc     = false
+
+    s.add_runtime_dependency 'color'
 }
